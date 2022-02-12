@@ -24,7 +24,7 @@ try {
 }
 
 fastify.get('/', async (request, reply) => {
-  if (!request.query?.link || request.query?.link?.match(/\b\w+:\/\//)) {
+  if (!request.query?.link || !request.query?.link?.match(/\b\w+:\/\//)) {
     const t = Date.now();
     console.log({ t, reason: 'no protocol' });
     reply.code(400);
