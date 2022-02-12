@@ -21,8 +21,8 @@ fastify.get('/', async (request, reply) => {
       deviceScaleFactor: 1,
     });
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app');
-    const img = await page.screenshot({ type: 'png' });
-    reply.headers({ 'Content-Type': 'image/png' });
+    const img = await page.screenshot({ type: 'webp', quality: parseInt(request.query?.quality) || 100 });
+    reply.headers({ 'Content-Type': 'image/webp' });
     reply.send(img);
   } catch (e) {
     console.log({ t: Date.now(), e });
