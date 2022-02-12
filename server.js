@@ -3,6 +3,8 @@ import Fastify from 'fastify';
 
 const fastify = Fastify();
 
+let cache = [];
+
 let browser;
 
 try {
@@ -13,6 +15,17 @@ try {
 }
 
 fastify.get('/', async (request, reply) => {
+  if (cache.some(c => c.link === request.query?.link)) {
+    const c = cache.find(f => f.link === request.query?.link);
+    if (!c) {
+      const t = Date.now();
+      console.log({ t, e: 'maybe cache got deleted' });
+      reply.code(500);
+      return reply.send({ errorTimestamp: t });
+    }
+    reply.headers({ 'Content-Type': 'image/webp' });
+    return reply.send(c?.img);
+  }
   try {
     const page = await browser.newPage();
     await page.setViewport({
@@ -23,12 +36,15 @@ fastify.get('/', async (request, reply) => {
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app');
     const img = await page.screenshot({ type: 'webp', quality: parseInt(request.query?.quality) || 100 });
     await page.close();
+    cache = cache.filter((_f, i) => i < 10);
+    cache = [{ link: request.query?.link, img }, ...cache];
     reply.headers({ 'Content-Type': 'image/webp' });
     reply.send(img);
   } catch (e) {
-    console.log({ t: Date.now(), e });
+    const t = Date.now();
+    console.log({ t, e });
     reply.code(500);
-    reply.send({ errorTimestamp: Date.now() });
+    reply.send({ errorTimestamp: t });
   }
 });
 
