@@ -1,11 +1,11 @@
 import puppeteer from 'puppeteer';
 import Fastify from 'fastify';
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify();
 
 fastify.get('/', async (request, reply) => {
   try {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setViewport({
       width: 1920,
@@ -24,7 +24,7 @@ fastify.get('/', async (request, reply) => {
 });
 
 try {
-  await fastify.listen(3000, '0.0.0.0');
+  await fastify.listen(process.env.PORT || 3000);
 } catch (e) {
   fastify.log.error(err)
   process.exit(1);
