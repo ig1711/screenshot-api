@@ -16,9 +16,9 @@ fastify.get('/', async (request, reply) => {
   try {
     const page = await browser.newPage();
     await page.setViewport({
-      width: request.query?.size === 'small' ? 480 : 1920,
-      height: request.query?.size === 'small' ? 270 : 1080,
-      deviceScaleFactor: 1,
+      width: 1920,
+      height: 1080,
+      deviceScaleFactor: request.query?.size === 'small' ? 1/4 : 1,
     });
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app');
     const img = await page.screenshot({ type: 'webp', quality: parseInt(request.query?.quality) || 100 });
