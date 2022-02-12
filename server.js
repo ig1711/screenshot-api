@@ -4,8 +4,17 @@ import Fastify from 'fastify';
 const fastify = Fastify();
 
 let cache = [];
-
+let pending = [];
 let browser;
+
+const waitFor = url => new Promise(resolve => {
+  const interval = setInterval(() => {
+    if (!pending.includes(url)) {
+      clearInterval(interval);
+      resolve();
+    }
+  }, 500);
+});
 
 try {
   browser = await puppeteer.launch({ args: ['--no-sandbox'] });
@@ -15,6 +24,13 @@ try {
 }
 
 fastify.get('/', async (request, reply) => {
+  if (!request.query?.link || request.query?.link?.match(/\b\w+:\/\//)) {
+    const t = Date.now();
+    console.log({ t, reason: 'no protocol' });
+    reply.code(400);
+    return reply.send({ errorTimestamp: t, reason: 'Protocol needed for the link' });
+  }
+  if (pending.includes(request.query?.link)) await waitFor(request.query?.link);
   if (cache.some(c => c.link === request.query?.link)) {
     const c = cache.find(f => f.link === request.query?.link);
     if (!c) {
@@ -27,6 +43,7 @@ fastify.get('/', async (request, reply) => {
     return reply.send(c?.img);
   }
   try {
+    pending = [...pending, request.query?.link];
     const page = await browser.newPage();
     await page.setViewport({
       width: 1920,
@@ -38,6 +55,7 @@ fastify.get('/', async (request, reply) => {
     await page.close();
     cache = cache.filter((_f, i) => i < 3);
     cache = [{ link: request.query?.link, img }, ...cache];
+    pending = pending.filter(f => f !== request.query?.link);
     reply.headers({ 'Content-Type': 'image/webp' });
     reply.send(img);
   } catch (e) {
