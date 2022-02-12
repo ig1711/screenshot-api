@@ -3,9 +3,17 @@ import Fastify from 'fastify';
 
 const fastify = Fastify();
 
+let browser;
+
+try {
+  browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+} catch (e) {
+  console.log(e);
+  process.exit(1);
+}
+
 fastify.get('/', async (request, reply) => {
   try {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setViewport({
       width: 1920,
@@ -15,7 +23,6 @@ fastify.get('/', async (request, reply) => {
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app');
     const img = await page.screenshot({ type: 'webp', quality: parseInt(request.query?.quality) || 100 });
     await page.close();
-    await browser.close();
     reply.headers({ 'Content-Type': 'image/webp' });
     reply.send(img);
   } catch (e) {
@@ -31,4 +38,9 @@ try {
   fastify.log.error(err)
   process.exit(1);
 }
+
+process.on('SIGTERM', async () => {
+  await browser.close();
+  process.exit(0);
+});
 
