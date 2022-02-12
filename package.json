@@ -1,0 +1,16 @@
+{
+  "name": "screenshot-api",
+  "version": "1.0.0",
+  "description": "Website screenshot api using Puppeteer ",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ig1711",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "fastify": "^3.27.1",
+    "puppeteer": "^13.3.1"
+  }
+}
