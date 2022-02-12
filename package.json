@@ -4,7 +4,7 @@
   "description": "Website screenshot api using Puppeteer ",
   "main": "server.js",
   "engines": {
-    "node": "17.x"
+    "node": "^17.x"
   },
   "scripts": {
     "start": "node ."
