@@ -24,7 +24,7 @@ fastify.get('/', async (request, reply) => {
 });
 
 try {
-  await fastify.listen(process.env.PORT || 3000);
+  await fastify.listen(process.env.PORT || 3000, '0.0.0.0');
 } catch (e) {
   fastify.log.error(err)
   process.exit(1);
