@@ -3,9 +3,17 @@ import Fastify from 'fastify';
 
 const fastify = Fastify();
 
+let browser;
+
+try {
+  browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+} catch (e) {
+  console.log('Could not lauch browser', e);
+  process.exit(1);
+}
+
 fastify.get('/', async (request, reply) => {
   try {
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.setViewport({
       width: 1920,
@@ -29,4 +37,9 @@ try {
   fastify.log.error(err)
   process.exit(1);
 }
+
+process.on('SIGTERM', async () => {
+  await browser.close();
+  process.exit(0);
+});
 
