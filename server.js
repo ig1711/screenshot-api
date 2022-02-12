@@ -36,7 +36,7 @@ fastify.get('/', async (request, reply) => {
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app');
     const img = await page.screenshot({ type: 'webp', quality: parseInt(request.query?.quality) || 100 });
     await page.close();
-    cache = cache.filter((_f, i) => i < 10);
+    cache = cache.filter((_f, i) => i < 3);
     cache = [{ link: request.query?.link, img }, ...cache];
     reply.headers({ 'Content-Type': 'image/webp' });
     reply.send(img);
