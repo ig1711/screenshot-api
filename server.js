@@ -23,6 +23,11 @@ try {
   process.exit(1);
 }
 
+const types = {
+  png: 'png',
+  webp: 'webp',
+};
+
 fastify.get('/', async (request, reply) => {
   if (!request.query?.link || !request.query?.link?.match(/\b\w+:\/\//)) {
     const t = Date.now();
@@ -39,7 +44,7 @@ fastify.get('/', async (request, reply) => {
       reply.code(500);
       return reply.send({ errorTimestamp: t });
     }
-    reply.headers({ 'Content-Type': 'image/webp' });
+    reply.headers({ 'Content-Type': `image/${c?.type}` });
     return reply.send(c?.img);
   }
   try {
@@ -51,12 +56,13 @@ fastify.get('/', async (request, reply) => {
       deviceScaleFactor: request.query?.size === 'small' ? 1/4 : 1,
     });
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app', { waitUntil: 'networkidle2' });
-    const img = await page.screenshot({ type: 'webp', quality: parseInt(request.query?.quality) || 100 });
+    const type = types[request.query?.type] || 'webp';
+    const img = await page.screenshot({ type, quality: parseInt(request.query?.quality) || 100 });
     await page.close();
     cache = cache.filter((_f, i) => i < 3);
-    cache = [{ link: request.query?.link, img }, ...cache];
+    cache = [{ link: request.query?.link, img, type }, ...cache];
     pending = pending.filter(f => f !== request.query?.link);
-    reply.headers({ 'Content-Type': 'image/webp' });
+    reply.headers({ 'Content-Type': `image/${type}` });
     reply.send(img);
   } catch (e) {
     const t = Date.now();
