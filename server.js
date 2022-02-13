@@ -50,7 +50,7 @@ fastify.get('/', async (request, reply) => {
       height: 1080,
       deviceScaleFactor: request.query?.size === 'small' ? 1/4 : 1,
     });
-    await page.goto(request.query?.link || 'https://ryopaste.netlify.app');
+    await page.goto(request.query?.link || 'https://ryopaste.netlify.app', { waitUntil: 'networkidle0' });
     const img = await page.screenshot({ type: 'webp', quality: parseInt(request.query?.quality) || 100 });
     await page.close();
     cache = cache.filter((_f, i) => i < 3);
