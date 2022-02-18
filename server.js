@@ -36,7 +36,8 @@ fastify.get('/', async (request, reply) => {
     return reply.send({ errorTimestamp: t, reason: 'Protocol needed for the link' });
   }
   if (pending.includes(request.query?.link)) await waitFor(request.query?.link);
-  if (!request.query?.nocache && cache.some(c => c.link === request.query?.link)) {
+  if (request.query?.nocache) cache = cache.filter(f => f.link !== request.query?.link);
+  if (cache.some(c => c.link === request.query?.link)) {
     const c = cache.find(f => f.link === request.query?.link);
     if (!c) {
       const t = Date.now();
