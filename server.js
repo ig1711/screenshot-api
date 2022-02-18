@@ -36,7 +36,7 @@ fastify.get('/', async (request, reply) => {
     return reply.send({ errorTimestamp: t, reason: 'Protocol needed for the link' });
   }
   if (pending.includes(request.query?.link)) await waitFor(request.query?.link);
-  if (cache.some(c => c.link === request.query?.link)) {
+  if (!request.query?.nocache && cache.some(c => c.link === request.query?.link)) {
     const c = cache.find(f => f.link === request.query?.link);
     if (!c) {
       const t = Date.now();
@@ -57,7 +57,7 @@ fastify.get('/', async (request, reply) => {
     });
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app', { waitUntil: 'networkidle2' });
     const type = types[request.query?.type] || 'webp';
-    const img = await page.screenshot({ type, quality: parseInt(request.query?.quality) || 100 });
+    const img = await page.screenshot({ type, quality: parseInt(request.query?.quality) || 100, fullPage: request.query?.fp ? true : false });
     await page.close();
     cache = cache.filter((_f, i) => i < 3);
     cache = [{ link: request.query?.link, img, type }, ...cache];
