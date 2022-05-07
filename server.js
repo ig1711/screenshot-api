@@ -6,6 +6,7 @@ const fastify = Fastify();
 let cache = [];
 let pending = [];
 let browser;
+let page;
 
 const waitFor = url => new Promise(resolve => {
   const interval = setInterval(() => {
@@ -49,7 +50,7 @@ fastify.get('/', async (request, reply) => {
   }
   try {
     pending = [...pending, request.query?.link];
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.setViewport({
       width: 1920,
       height: 1080,
@@ -57,7 +58,8 @@ fastify.get('/', async (request, reply) => {
     });
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app', { waitUntil: 'networkidle2' });
     const type = types[request.query?.type] || 'webp';
-    const img = await page.screenshot({ type, quality: type === 'png' ? null : parseInt(request.query?.quality) || 100, fullPage: request.query?.fp ? true : false });
+    const q = parseInt(request.query.quality);
+    const img = await page.screenshot({ type, quality: type === 'png' ? null : (q < 0 || q > 100) ? 100 : q, fullPage: request.query?.fp ? true : false });
     await page.close();
     cache = cache.filter((_f, i) => i < 3);
     cache = [{ link: request.query?.link, img, type }, ...cache];
@@ -65,6 +67,7 @@ fastify.get('/', async (request, reply) => {
     reply.headers({ 'Content-Type': `image/${type}` });
     reply.send(img);
   } catch (e) {
+    page && !page.isClosed() && await page.close().catch(() => console.log('could not close the page'));
     const t = Date.now();
     console.log({ t, e });
     reply.code(500);
