@@ -30,7 +30,10 @@ const types = {
 };
 
 fastify.get('/', async (request, reply) => {
-  if (!request.query?.link || !request.query?.link?.match(/\b\w+:\/\//)) {
+  if (!request.query?.link) {
+    return reply.redirect('https://github.com/ig1711/screenshot-api#readme');
+  } 
+  if (!request.query?.link?.match(/\b\w+:\/\//)) {
     const t = Date.now();
     console.log({ t, reason: 'no protocol' });
     reply.code(400);
@@ -58,7 +61,7 @@ fastify.get('/', async (request, reply) => {
     });
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app', { waitUntil: 'networkidle2' });
     const type = types[request.query?.type] || 'webp';
-    const q = parseInt(request.query.quality);
+    const q = parseInt(request.query.quality) || 100;
     const img = await page.screenshot({ type, quality: type === 'png' ? null : (q < 0 || q > 100) ? 100 : q, fullPage: request.query?.fp ? true : false });
     await page.close();
     cache = cache.filter((_f, i) => i < 3);
