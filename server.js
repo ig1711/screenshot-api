@@ -80,7 +80,7 @@ fastify.get('/clearcache', (_request, reply) => {
 try {
   await fastify.listen(process.env.PORT || 3000, '0.0.0.0');
 } catch (e) {
-  fastify.log.error(err)
+  fastify.log.error(e)
   process.exit(1);
 }
 
