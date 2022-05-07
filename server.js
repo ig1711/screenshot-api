@@ -57,7 +57,7 @@ fastify.get('/', async (request, reply) => {
     });
     await page.goto(request.query?.link || 'https://ryopaste.netlify.app', { waitUntil: 'networkidle2' });
     const type = types[request.query?.type] || 'webp';
-    const img = await page.screenshot({ type, quality: parseInt(request.query?.quality) || 100, fullPage: request.query?.fp ? true : false });
+    const img = await page.screenshot({ type, quality: type === 'png' ? null : parseInt(request.query?.quality) || 100, fullPage: request.query?.fp ? true : false });
     await page.close();
     cache = cache.filter((_f, i) => i < 3);
     cache = [{ link: request.query?.link, img, type }, ...cache];
